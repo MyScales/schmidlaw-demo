@@ -211,7 +211,7 @@
             transition: all 0.3s ease;
         }
         
-        /* Hero Section */
+        /* Hero Section with Video Background */
         .hero {
             position: relative;
             height: 100vh;
@@ -222,38 +222,26 @@
             overflow: hidden;
         }
         
-        .hero-slider {
+        .hero-video-container {
             position: absolute;
             inset: 0;
             z-index: 0;
         }
         
-        .hero-slide {
-            position: absolute;
-            inset: 0;
-            opacity: 0;
-            transition: opacity 1.5s ease-in-out;
-        }
-        
-        .hero-slide.active {
-            opacity: 1;
-        }
-        
-        .hero-slide img {
+        .hero-video {
             width: 100%;
             height: 100%;
             object-fit: cover;
-            animation: kenBurns 20s ease-in-out infinite alternate;
         }
         
-        .hero-slide:nth-child(1) img { animation-delay: 0s; }
-        .hero-slide:nth-child(2) img { animation-delay: -5s; transform-origin: top left; }
-        .hero-slide:nth-child(3) img { animation-delay: -10s; transform-origin: bottom right; }
-        .hero-slide:nth-child(4) img { animation-delay: -15s; transform-origin: center; }
-        
-        @keyframes kenBurns {
-            0% { transform: scale(1); }
-            100% { transform: scale(1.1); }
+        /* Fallback image for when video doesn't load - City skyline */
+        .hero-fallback {
+            position: absolute;
+            inset: 0;
+            background-image: url('https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=1920&q=80');
+            background-size: cover;
+            background-position: center;
+            z-index: -1;
         }
         
         .hero-overlay {
@@ -1114,21 +1102,17 @@
         <a href="#contact" onclick="toggleMobileMenu()">Kontakt</a>
     </div>
 
-    <!-- Hero Section -->
+    <!-- Hero Section with Video Background -->
     <section class="hero">
-        <div class="hero-slider">
-            <div class="hero-slide active">
-                <img src="https://images.unsplash.com/photo-1573497161161-c3e73707e25c?w=1920&q=80" alt="Zürich Altstadt mit Limmat und Grossmünster">
-            </div>
-            <div class="hero-slide">
-                <img src="https://images.unsplash.com/photo-1573108724029-4c46571d6490?w=1920&q=80" alt="Zürich Grossmünster und Limmat">
-            </div>
-            <div class="hero-slide">
-                <img src="https://images.unsplash.com/photo-1515488764276-beab7607c1e6?w=1920&q=80" alt="Zürich Stadtansicht">
-            </div>
-            <div class="hero-slide">
-                <img src="https://images.unsplash.com/photo-1586985564150-11ee04838034?w=1920&q=80" alt="Zürich Paradeplatz Bahnhofstrasse">
-            </div>
+        <div class="hero-video-container">
+            <!-- Fallback image in case video doesn't load -->
+            <div class="hero-fallback"></div>
+            <!-- Aerial city video - Mixkit free stock -->
+            <video class="hero-video" autoplay muted loop playsinline poster="https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=1920&q=80">
+                <source src="https://assets.mixkit.co/videos/1617/1617-720.mp4" type="video/mp4">
+                <!-- Alternative: Night city aerial -->
+                <!-- <source src="https://assets.mixkit.co/videos/49846/49846-720.mp4" type="video/mp4"> -->
+            </video>
         </div>
         <div class="hero-overlay"></div>
         <div class="hero-content">
@@ -1156,7 +1140,8 @@
     <section class="about" id="about">
         <div class="about-container">
             <div class="about-image reveal">
-                <img src="https://images.unsplash.com/photo-1497366811353-6870744d04b2?w=800&q=80" alt="Elegantes Büro im Zürcher Geschäftsviertel" class="about-image-main">
+                <!-- High-quality architectural shot - NO PEOPLE - Prestigious skyscrapers -->
+                <img src="https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=1200&q=85" alt="Geschäftsviertel Zürich - Moderne Architektur im Finanzdistrikt" class="about-image-main">
                 <div class="about-image-accent"></div>
                 <div class="about-stats">
                     <div class="stat-number">30+</div>
@@ -1462,41 +1447,28 @@
             lastScroll = currentScroll;
         });
         
-        // Hero slider
-        const slides = document.querySelectorAll('.hero-slide');
-        let currentSlide = 0;
-        
-        function nextSlide() {
-            slides[currentSlide].classList.remove('active');
-            currentSlide = (currentSlide + 1) % slides.length;
-            slides[currentSlide].classList.add('active');
-        }
-        
-        setInterval(nextSlide, 6000);
-        
         // Mobile menu
         function toggleMobileMenu() {
             const menu = document.getElementById('mobileMenu');
             menu.classList.toggle('active');
-            document.body.style.overflow = menu.classList.contains('active') ? 'hidden' : '';
         }
         
-        // Scroll reveal
-        const reveals = document.querySelectorAll('.reveal');
+        // Reveal animations on scroll
+        const revealElements = document.querySelectorAll('.reveal');
         
-        function checkReveals() {
-            reveals.forEach(element => {
-                const elementTop = element.getBoundingClientRect().top;
+        const revealOnScroll = () => {
+            revealElements.forEach(el => {
+                const rect = el.getBoundingClientRect();
                 const windowHeight = window.innerHeight;
                 
-                if (elementTop < windowHeight - 100) {
-                    element.classList.add('visible');
+                if (rect.top < windowHeight - 100) {
+                    el.classList.add('visible');
                 }
             });
-        }
+        };
         
-        window.addEventListener('scroll', checkReveals);
-        window.addEventListener('load', checkReveals);
+        window.addEventListener('scroll', revealOnScroll);
+        window.addEventListener('load', revealOnScroll);
         
         // Smooth scroll for anchor links
         document.querySelectorAll('a[href^="#"]').forEach(anchor => {
@@ -1504,24 +1476,12 @@
                 e.preventDefault();
                 const target = document.querySelector(this.getAttribute('href'));
                 if (target) {
-                    const navHeight = navbar.offsetHeight;
-                    const targetPosition = target.offsetTop - navHeight;
-                    window.scrollTo({
-                        top: targetPosition,
-                        behavior: 'smooth'
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
                     });
                 }
             });
-        });
-        
-        // Parallax effect on scroll (subtle)
-        window.addEventListener('scroll', () => {
-            const scrolled = window.pageYOffset;
-            const heroContent = document.querySelector('.hero-content');
-            if (heroContent && scrolled < window.innerHeight) {
-                heroContent.style.transform = `translateY(${scrolled * 0.3}px)`;
-                heroContent.style.opacity = 1 - (scrolled / window.innerHeight);
-            }
         });
     </script>
 </body>
